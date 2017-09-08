@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">teachersprivacy</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="rational_permission">rational_permission</string>
+    <string name="denied_permission">denied_permission</string>
+</resources>
