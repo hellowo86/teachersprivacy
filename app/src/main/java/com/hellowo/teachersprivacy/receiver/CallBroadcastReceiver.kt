@@ -12,11 +12,14 @@ import android.app.PendingIntent
 import android.graphics.Color
 import android.support.v4.app.NotificationCompat
 import com.hellowo.teachersprivacy.R
-import com.hellowo.teachersprivacy.ui.MainActivity
+import com.hellowo.teachersprivacy.log
+import com.hellowo.teachersprivacy.model.History
+import com.hellowo.teachersprivacy.ui.activity.CallingPopupActivity
+import com.hellowo.teachersprivacy.ui.activity.MainActivity
+import io.realm.Realm
 
 
-
-class IncomingCallBroadcastReceiver : BroadcastReceiver() {
+class CallBroadcastReceiver : BroadcastReceiver() {
     private var lastState = TelephonyManager.CALL_STATE_IDLE
     private var callStartTime: Date? = null
     private var isIncoming: Boolean = false
@@ -44,11 +47,11 @@ class IncomingCallBroadcastReceiver : BroadcastReceiver() {
     }
 
     //Derived classes should override these to respond to specific events of interest
-    fun onIncomingCallStarted(ctx: Context, number: String?, start: Date?) { showNotification(ctx, number, start) }
+    fun onIncomingCallStarted(ctx: Context, number: String?, start: Date?) { startPopupActivity(ctx, number, start) }
     fun onOutgoingCallStarted(ctx: Context, number: String?, start: Date?) {}
-    fun onIncomingCallEnded(ctx: Context, number: String?, start: Date?, end: Date?) {}
-    fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date?, end: Date?) {}
-    fun onMissedCall(ctx: Context, number: String?, start: Date?) {}
+    fun onIncomingCallEnded(ctx: Context, number: String?, start: Date?, end: Date?) { saveHistory(ctx, number, start, end, 0) }
+    fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date?, end: Date?) { saveHistory(ctx, number, start, end, 1) }
+    fun onMissedCall(ctx: Context, number: String?, start: Date?) { saveHistory(ctx, number, start, start, 2) }
 
     //Deals with actual events
 
@@ -101,8 +104,27 @@ class IncomingCallBroadcastReceiver : BroadcastReceiver() {
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
 
         val notificationManager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
+    }
+
+    private fun startPopupActivity(ctx: Context, number: String?, start: Date?) {
+        val intent = Intent(ctx, CallingPopupActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        intent.putExtra("phoneNumber", number)
+        ctx.startActivity(intent)
+    }
+
+    private fun  saveHistory(ctx: Context, number: String?, start: Date?, end: Date?, type: Int) {
+        log("saveHistory" + number)
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction {
+            val history = realm.createObject(History::class.java, UUID.randomUUID().toString())
+            history.dtStart = start?.time
+            history.dtEnd = end?.time
+        }
+        realm.close()
     }
 }
