@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -19,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/top_menu_bar_height"
         android:background="@color/white"
-        android:elevation="5dp">
+        android:elevation="20dp">
 
         <ImageButton
             android:id="@+id/studentTab"
@@ -28,9 +27,9 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="centerInside"
-            android:padding="@dimen/small_margin"
-            android:src="@drawable/ic_camera"
-            android:tint="@color/grey"/>
+            android:padding="@dimen/normal_margin"
+            android:src="@drawable/ic_people_black_48dp"
+            android:tint="@color/t1"/>
 
         <ImageButton
             android:id="@+id/historyTab"
@@ -39,9 +38,9 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="centerInside"
-            android:padding="@dimen/small_margin"
-            android:src="@drawable/ic_camera"
-            android:tint="@color/grey"/>
+            android:padding="@dimen/normal_margin"
+            android:src="@drawable/ic_call_black_48dp"
+            android:tint="@color/t1"/>
 
         <ImageButton
             android:id="@+id/settingTab"
@@ -50,9 +49,9 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="centerInside"
-            android:padding="@dimen/small_margin"
-            android:src="@drawable/ic_camera"
-            android:tint="@color/grey"/>
+            android:padding="@dimen/normal_margin"
+            android:src="@drawable/ic_settings_black_48dp"
+            android:tint="@color/t1"/>
 
     </LinearLayout>
 

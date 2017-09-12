@@ -1,22 +1,134 @@
 package com.hellowo.teachersprivacy.ui.activity
 
+import android.Manifest
 import android.arch.lifecycle.LifecycleActivity
-import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
+import android.view.View
+import com.bumptech.glide.Glide
+import com.gun0912.tedpermission.PermissionListener
+import com.gun0912.tedpermission.TedPermission
+import com.hellowo.teachersprivacy.FileUtil
 import com.hellowo.teachersprivacy.R
-import com.hellowo.teamfinder.viewmodel.MainViewModel
+import com.hellowo.teachersprivacy.log
+import com.hellowo.teachersprivacy.model.Student
+import gun0912.tedbottompicker.TedBottomPicker
+import io.realm.Realm
+import jp.wasabeef.glide.transformations.CropCircleTransformation
+import kotlinx.android.synthetic.main.activity_student.*
+import kotlinx.android.synthetic.main.list_item_student.view.*
+import java.io.File
+import java.util.ArrayList
+
 
 class StudentActivity : LifecycleActivity() {
-    lateinit var viewModel: MainViewModel
+    lateinit var student: Student
+    var isEditMode: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        setContentView(R.layout.activity_student)
+        student = Realm.getDefaultInstance().where(Student::class.java).equalTo("id", intent.getStringExtra("id")).findFirst()
+        log(student.toString())
         setLayout()
     }
 
     private fun setLayout() {
+        nameText.text = student.name
+        schoolText.text = student.schoolInfo
+        phoneNumberText.setText(student.phoneNumber)
+        addressText.setText(student.address)
+        memoText.setText(student.memo)
+
+        if(student.profileImageUrl.isNullOrEmpty()) {
+            profileImg.setImageResource(R.drawable.boy)
+        }else {
+            Glide.with(this).load(File(student.profileImageUrl)).bitmapTransform(CropCircleTransformation(this)).into(profileImg)
+        }
+
+        profileImg.setOnClickListener { checkExternalStoragePermission() }
+        deleteBtn.setOnClickListener {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(R.string.delete_student)
+            builder.setCancelable(true)
+            builder.setMessage(R.string.delete_student_sub)
+            builder.setPositiveButton(R.string.ok) { _,_ -> delete() }
+            builder.setNegativeButton(R.string.cancel, null)
+            builder.show()
+        }
+        editBtn.setOnClickListener {
+            isEditMode = true
+            setModeLayout()
+        }
+        confirmBtn.setOnClickListener {
+            save(student.profileImageUrl)
+            isEditMode = false
+            setModeLayout()
+        }
+        setModeLayout()
     }
 
+    private fun setModeLayout() {
+        if(isEditMode) {
+            phoneNumberText.isEnabled = true
+            addressText.isEnabled = true
+            memoText.isEnabled = true
+            editBtn.visibility = View.GONE
+            confirmBtn.visibility = View.VISIBLE
+        }else {
+            phoneNumberText.isEnabled = false
+            addressText.isEnabled = false
+            memoText.isEnabled = false
+            editBtn.visibility = View.VISIBLE
+            confirmBtn.visibility = View.GONE
+        }
+    }
+
+    private val permissionlistener = object : PermissionListener {
+        override fun onPermissionGranted() { showPhotoPicker() }
+        override fun onPermissionDenied(deniedPermissions: ArrayList<String>) {}
+    }
+
+    fun checkExternalStoragePermission() {
+        TedPermission(this)
+                .setPermissionListener(permissionlistener)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check()
+    }
+
+    private fun showPhotoPicker() {
+        val bottomSheetDialogFragment = TedBottomPicker.Builder(this)
+                .setOnImageSelectedListener {
+                    uri -> save(FileUtil.getPath(this, uri))
+                }.setMaxCount(100).create()
+        bottomSheetDialogFragment.show(supportFragmentManager)
+    }
+
+    private fun save(imgPath: String?) {
+        Realm.getDefaultInstance().executeTransaction { realm ->
+            student.phoneNumber = phoneNumberText.text.toString()
+            student.address = addressText.text.toString()
+            student.memo = memoText.text.toString()
+            student.profileImageUrl = imgPath
+            realm.insertOrUpdate(student)
+        }
+        setLayout()
+    }
+
+    private fun delete() {
+        Realm.getDefaultInstance().executeTransaction { _ ->
+            student.deleteFromRealm()
+        }
+        finish()
+    }
+
+    private fun startMap(address : String) {
+        val gmmIntentUri = Uri.parse("geo:0,0?q=" + address)
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        mapIntent.`package` = "com.google.android.apps.maps"
+        startActivity(mapIntent)
+    }
 }

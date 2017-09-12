@@ -9,14 +9,18 @@ import android.telephony.TelephonyManager
 import java.util.*
 import android.media.RingtoneManager
 import android.app.PendingIntent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.support.v4.app.NotificationCompat
+import com.bumptech.glide.Glide
 import com.hellowo.teachersprivacy.R
 import com.hellowo.teachersprivacy.log
 import com.hellowo.teachersprivacy.model.History
 import com.hellowo.teachersprivacy.ui.activity.CallingPopupActivity
 import com.hellowo.teachersprivacy.ui.activity.MainActivity
 import io.realm.Realm
+import jp.wasabeef.glide.transformations.CropCircleTransformation
+import java.io.File
 
 
 class CallBroadcastReceiver : BroadcastReceiver() {
@@ -26,7 +30,6 @@ class CallBroadcastReceiver : BroadcastReceiver() {
     private var savedNumber: String? = null  //because the passed incoming is only valid in ringing
 
     override fun onReceive(context: Context, intent: Intent) {
-
         //We listen to two intents.  The new outgoing call only tells us of an outgoing call.  We use it to get the number.
         if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
             savedNumber = intent.extras.getString("android.intent.extra.PHONE_NUMBER")
@@ -41,7 +44,7 @@ class CallBroadcastReceiver : BroadcastReceiver() {
             } else if (stateStr == TelephonyManager.EXTRA_STATE_RINGING) {
                 state = TelephonyManager.CALL_STATE_RINGING
             }
-
+            log(stateStr + "/" + number)
             onCallStateChanged(context, state, number)
         }
     }
@@ -91,6 +94,13 @@ class CallBroadcastReceiver : BroadcastReceiver() {
     }
 
     fun showNotification(ctx: Context, number: String?, start: Date?) {
+/*
+        var resource: Bitmap? = null
+        try{
+            resource = Glide.with(ctx).load(File())
+                    .asBitmap().transform(CropCircleTransformation(ctx)).into(100, 100).get()
+        }catch (e: Exception){}
+*/
         val intent = Intent(ctx, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_ONE_SHOT)
@@ -111,6 +121,7 @@ class CallBroadcastReceiver : BroadcastReceiver() {
     }
 
     private fun startPopupActivity(ctx: Context, number: String?, start: Date?) {
+        log("startPopupActivity" + number)
         val intent = Intent(ctx, CallingPopupActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         intent.putExtra("phoneNumber", number)

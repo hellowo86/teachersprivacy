@@ -27,6 +27,11 @@
     <color name="secondaryWhiteText">#b3FFFFFF</color>
     <color name="disableWhiteText">#80FFFFFF</color>
      -->
+    <color name="p1">#A593E0</color>
+    <color name="b1">#E0E3DA</color>
+    <color name="b2">#FFFFF3</color>
+    <color name="t1">#566270</color>
+
     <color name="black">#000000</color>
     <color name="blackAlpha">#b3000000</color>
     <color name="white">#FFFFFF</color>

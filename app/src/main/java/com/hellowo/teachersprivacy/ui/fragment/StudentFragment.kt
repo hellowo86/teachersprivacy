@@ -28,8 +28,8 @@ import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.util.*
 import android.support.v7.widget.RecyclerView
-
-
+import com.day2life.timeblocks.dialog.TwoButtonBottomDialog
+import com.hellowo.teachersprivacy.ui.activity.StudentActivity
 
 
 class StudentFragment : LifecycleFragment() {
@@ -50,7 +50,11 @@ class StudentFragment : LifecycleFragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = StudentAdapter(activity, viewModel.studentList) {}
+        adapter = StudentAdapter(activity, viewModel.studentList) {
+            val intent = Intent(activity, StudentActivity::class.java)
+            intent.putExtra("id", it?.id)
+            startActivity(intent)
+        }
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
         decoration = StickyRecyclerHeadersDecoration(adapter)
@@ -62,6 +66,18 @@ class StudentFragment : LifecycleFragment() {
         })
 
         titleText.setOnClickListener { startFilePickerActivity() }
+        addBtn.setOnClickListener { startAddChoiceDialog() }
+    }
+
+    private fun startAddChoiceDialog() {
+        val dialog = TwoButtonBottomDialog()
+        dialog.init(object : TwoButtonBottomDialog.DialogInterface{
+            override fun onYes() {
+                dialog.dismiss()
+            }
+            override fun onNo() { dialog.dismiss() }
+        }, R.string.add_manual, R.string.load_file)
+        dialog.show(activity.supportFragmentManager, dialog.tag)
     }
 
     private fun startFilePickerActivity() {
