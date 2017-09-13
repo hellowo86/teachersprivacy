@@ -19,29 +19,43 @@ import gun0912.tedbottompicker.TedBottomPicker
 import io.realm.Realm
 import jp.wasabeef.glide.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.activity_student.*
-import kotlinx.android.synthetic.main.list_item_student.view.*
 import java.io.File
-import java.util.ArrayList
+import java.util.*
 
 
 class StudentActivity : LifecycleActivity() {
     lateinit var student: Student
     var isEditMode: Boolean = false
+    var isInsertMode: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_student)
-        student = Realm.getDefaultInstance().where(Student::class.java).equalTo("id", intent.getStringExtra("id")).findFirst()
+        if(intent.getStringExtra("id").isNullOrEmpty()) {
+            student = Student()
+            student.id = UUID.randomUUID().toString()
+            isEditMode = true
+            isInsertMode = true
+            setModeLayout()
+            deleteBtn.visibility = View.GONE
+        }else {
+            student = Realm.getDefaultInstance().where(Student::class.java)
+                    .equalTo("id", intent.getStringExtra("id")).findFirst()
+        }
         log(student.toString())
         setLayout()
     }
 
     private fun setLayout() {
-        nameText.text = student.name
+        nameText.setText(student.name)
         schoolText.text = student.schoolInfo
         phoneNumberText.setText(student.phoneNumber)
         addressText.setText(student.address)
         memoText.setText(student.memo)
+
+        if(student.parents?.isNotEmpty() as Boolean) {
+            phoneNumberText.setText(student.parents!![0].phoneNumber)
+        }
 
         if(student.profileImageUrl.isNullOrEmpty()) {
             profileImg.setImageResource(R.drawable.boy)
@@ -67,19 +81,24 @@ class StudentActivity : LifecycleActivity() {
             save(student.profileImageUrl)
             isEditMode = false
             setModeLayout()
+            if(isInsertMode) { finish() }
         }
         setModeLayout()
     }
 
     private fun setModeLayout() {
         if(isEditMode) {
+            nameText.isEnabled = true
             phoneNumberText.isEnabled = true
+            pPhoneNumberText.isEnabled = true
             addressText.isEnabled = true
             memoText.isEnabled = true
             editBtn.visibility = View.GONE
             confirmBtn.visibility = View.VISIBLE
         }else {
+            nameText.isEnabled = false
             phoneNumberText.isEnabled = false
+            pPhoneNumberText.isEnabled = false
             addressText.isEnabled = false
             memoText.isEnabled = false
             editBtn.visibility = View.VISIBLE
@@ -108,14 +127,17 @@ class StudentActivity : LifecycleActivity() {
     }
 
     private fun save(imgPath: String?) {
-        Realm.getDefaultInstance().executeTransaction { realm ->
-            student.phoneNumber = phoneNumberText.text.toString()
-            student.address = addressText.text.toString()
-            student.memo = memoText.text.toString()
-            student.profileImageUrl = imgPath
-            realm.insertOrUpdate(student)
+        if(!nameText.text.isNullOrBlank() && !phoneNumberText.text.isNullOrBlank()) {
+            Realm.getDefaultInstance().executeTransaction { realm ->
+                student.name = nameText.text.toString()
+                student.phoneNumber = phoneNumberText.text.toString()
+                student.address = addressText.text.toString()
+                student.memo = memoText.text.toString()
+                student.profileImageUrl = imgPath
+                realm.insertOrUpdate(student)
+            }
+            setLayout()
         }
-        setLayout()
     }
 
     private fun delete() {

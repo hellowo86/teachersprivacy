@@ -33,6 +33,11 @@
             android:name=".ui.activity.CallingPopupActivity">
         </activity>
 
+        <activity
+            android:theme="@style/Theme.Transparent"
+            android:name="com.gun0912.tedpermission.TedPermissionActivity">
+        </activity>
+
         <receiver android:name=".receiver.CallBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE"/>

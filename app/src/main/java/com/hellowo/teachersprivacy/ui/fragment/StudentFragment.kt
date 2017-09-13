@@ -65,7 +65,6 @@ class StudentFragment : LifecycleFragment() {
             }
         })
 
-        titleText.setOnClickListener { startFilePickerActivity() }
         addBtn.setOnClickListener { startAddChoiceDialog() }
     }
 
@@ -74,29 +73,23 @@ class StudentFragment : LifecycleFragment() {
         dialog.init(object : TwoButtonBottomDialog.DialogInterface{
             override fun onYes() {
                 dialog.dismiss()
+                val intent = Intent(activity, StudentActivity::class.java)
+                startActivity(intent)
             }
-            override fun onNo() { dialog.dismiss() }
+            override fun onNo() {
+                dialog.dismiss()
+                startFilePickerActivity()
+            }
         }, R.string.add_manual, R.string.load_file)
         dialog.show(activity.supportFragmentManager, dialog.tag)
     }
 
     private fun startFilePickerActivity() {
-        // This always works
         val i = Intent(activity, FilePickerActivity::class.java)
-        // This works if you defined the intent filter
-        // Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-
-        // Set these depending on your use case. These are the defaults.
         i.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false)
         i.putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, false)
         i.putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_FILE)
-
-        // Configure initial directory by specifying a String.
-        // You could specify a String like "/storage/emulated/0/", but that can
-        // dangerous. Always use Android's API calls to get paths to the SD-card or
-        // internal memory.
         i.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().path)
-
         startActivityForResult(i, RC_FILE)
     }
 
@@ -123,12 +116,12 @@ class StudentFragment : LifecycleFragment() {
                         val student = Student()
                         student.id = UUID.randomUUID().toString()
                         student.number = ++number
-                        student.name = buf[0]
-                        student.phoneNumber = buf[1]
-                        student.address = buf[2]
+                        student.name = buf[0].trim()
+                        student.phoneNumber = buf[1].trim().replace("-", "")
+                        student.address = buf[2].trim()
                         if (buf.size > 3) {
                             val parent = Parent()
-                            parent.phoneNumber = buf[3]
+                            parent.phoneNumber = buf[3].trim().replace("-", "")
                             val parents = RealmList<Parent>()
                             parents.add(parent)
                             student.parents = parents
