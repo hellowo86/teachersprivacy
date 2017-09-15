@@ -5,10 +5,11 @@ import android.arch.lifecycle.ViewModel
 import com.hellowo.teachersprivacy.model.History
 import io.realm.Realm
 import io.realm.RealmResults
+import io.realm.Sort
 
 
 class HistoryViewModel : ViewModel() {
     val loading: MutableLiveData<Boolean> = MutableLiveData()
-    val historyList: RealmResults<History> = Realm.getDefaultInstance().where(History::class.java).findAllSorted("dtStart")
+    val historyList: RealmResults<History> = Realm.getDefaultInstance().where(History::class.java).findAllSorted("dtStart", Sort.DESCENDING)
 
 }

@@ -135,15 +135,13 @@ class StudentActivity : LifecycleActivity() {
                 student.memo = memoText.text.toString()
                 student.profileImageUrl = imgPath
                 realm.insertOrUpdate(student)
+                setLayout()
             }
-            setLayout()
         }
     }
 
     private fun delete() {
-        Realm.getDefaultInstance().executeTransaction { _ ->
-            student.deleteFromRealm()
-        }
+        Realm.getDefaultInstance().executeTransaction { _ -> student.deleteFromRealm() }
         finish()
     }
 
