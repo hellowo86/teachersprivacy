@@ -33,7 +33,7 @@
                 android:id="@+id/titleText"
                 android:textSize="18sp"
                 android:text="name"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/secondaryText"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

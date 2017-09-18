@@ -35,11 +35,9 @@
         android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/big_margin"
-        android:layout_marginRight="@dimen/big_margin"
         android:translationY="@dimen/top_menu_bar_height"
-        app:cardElevation="10dp"
-        app:cardCornerRadius="15dp"
+        app:cardElevation="0dp"
+        app:cardCornerRadius="0dp"
         app:cardBackgroundColor="@color/white">
 
         <android.support.v7.widget.RecyclerView

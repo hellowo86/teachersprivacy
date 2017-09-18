@@ -12,4 +12,5 @@ open class Student(@PrimaryKey var id: String? = null,
                    var address: String? = null,
                    var memo: String? = null,
                    var profileImageUrl: String? = null,
-                   var parents: RealmList<Parent>? = null) : RealmObject()
+                   var lastCallTime: Long = 0,
+                   var parents: RealmList<Parent> = RealmList()) : RealmObject()

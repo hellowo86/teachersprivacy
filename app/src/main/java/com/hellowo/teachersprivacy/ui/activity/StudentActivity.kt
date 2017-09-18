@@ -14,9 +14,11 @@ import com.gun0912.tedpermission.TedPermission
 import com.hellowo.teachersprivacy.FileUtil
 import com.hellowo.teachersprivacy.R
 import com.hellowo.teachersprivacy.log
+import com.hellowo.teachersprivacy.model.Parent
 import com.hellowo.teachersprivacy.model.Student
 import gun0912.tedbottompicker.TedBottomPicker
 import io.realm.Realm
+import io.realm.RealmList
 import jp.wasabeef.glide.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.activity_student.*
 import java.io.File
@@ -53,8 +55,8 @@ class StudentActivity : LifecycleActivity() {
         addressText.setText(student.address)
         memoText.setText(student.memo)
 
-        if(student.parents?.isNotEmpty() as Boolean) {
-            phoneNumberText.setText(student.parents!![0].phoneNumber)
+        if(student.parents.isNotEmpty()) {
+            pPhoneNumberText.setText(student.parents[0].phoneNumber)
         }
 
         if(student.profileImageUrl.isNullOrEmpty()) {
@@ -131,6 +133,15 @@ class StudentActivity : LifecycleActivity() {
             Realm.getDefaultInstance().executeTransaction { realm ->
                 student.name = nameText.text.toString()
                 student.phoneNumber = phoneNumberText.text.toString()
+
+                if(student.parents.isNotEmpty()) {
+                    student.parents[0].phoneNumber = pPhoneNumberText.text.toString()
+                }else {
+                    val parent = realm.createObject(Parent::class.java, UUID.randomUUID().toString())
+                    parent.phoneNumber = pPhoneNumberText.text.toString()
+                    student.parents.add(0, parent)
+                }
+
                 student.address = addressText.text.toString()
                 student.memo = memoText.text.toString()
                 student.profileImageUrl = imgPath

@@ -13,6 +13,7 @@ import android.telephony.TelephonyManager
 import com.hellowo.teachersprivacy.R
 import com.hellowo.teachersprivacy.log
 import com.hellowo.teachersprivacy.model.History
+import com.hellowo.teachersprivacy.model.Student
 import com.hellowo.teachersprivacy.ui.activity.CallingPopupActivity
 import com.hellowo.teachersprivacy.ui.activity.MainActivity
 import com.pixplicity.easyprefs.library.Prefs
@@ -31,7 +32,6 @@ class CallBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
             savedNumber = intent.extras.getString("android.intent.extra.PHONE_NUMBER")
-            log("!!!!!!android.intent.action.NEW_OUTGOING_CALL")
         } else {
             val stateStr = intent.extras.getString(TelephonyManager.EXTRA_STATE)
             val number = intent.extras.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
@@ -122,20 +122,38 @@ class CallBroadcastReceiver : BroadcastReceiver() {
 
     private fun startPopupActivity(ctx: Context, number: String?, start: Long) {
         log("startPopupActivity" + number)
-        val intent = Intent(ctx, CallingPopupActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        intent.putExtra("phoneNumber", number)
-        ctx.startActivity(intent)
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction {
+            val student = realm.where(Student::class.java).equalTo("phoneNumber", number)
+                    .or().equalTo("parents.phoneNumber", number)
+                    .findFirst()
+
+            student?.let {
+                val intent = Intent(ctx, CallingPopupActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                intent.putExtra("id", it.id)
+                ctx.startActivity(intent)
+            }
+        }
+        realm.close()
     }
 
     private fun  saveHistory(ctx: Context, number: String?, start: Long, end: Long, type: Int) {
         log("saveHistory" + number)
         val realm = Realm.getDefaultInstance()
         realm.executeTransaction {
-            val history = realm.createObject(History::class.java, UUID.randomUUID().toString())
-            history.dtStart = start
-            history.dtEnd = end
-            history.type = type
+            val student = realm.where(Student::class.java).equalTo("phoneNumber", number)
+                    .or().equalTo("parents.phoneNumber", number)
+                    .findFirst()
+            student.lastCallTime = start
+
+            student?.let {
+                val history = realm.createObject(History::class.java, UUID.randomUUID().toString())
+                history.student = it
+                history.dtStart = start
+                history.dtEnd = end
+                history.type = type
+            }
         }
         realm.close()
     }
